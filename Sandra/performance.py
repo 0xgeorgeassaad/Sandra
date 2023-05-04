@@ -19,10 +19,10 @@ def performance_test(names, files_data, verbose=True):
             stats[mode_name + '_dec'] = dict()
         for filename, file in files.items():
             ct = encryptor.encrypt(file)
-            if OPENPGP == 1:
+            if OPENPGP == 1: # PyCrypto
                 eiv, ct = ct[:18], ct[18:]
                 decryptor = AES.new(key, AES.MODE_OPENPGP, eiv)
-            elif OPENPGP == 2:
+            elif OPENPGP == 2: # Sandra
                 eiv, ct = ct[:18], ct[18:]
             t = timeit.Timer(
                 lambda: encryptor.encrypt(file)
@@ -50,6 +50,12 @@ def performance_test(names, files_data, verbose=True):
     if verbose:
         print(">> Finished running OPENPGP 1000 times")
 
+    # Sandra CFB
+    enc_dec_sandra = sandra.AES(key, sandra.MODE_CFB, iv)
+    run_n_times('CFB_SANDRA', enc_dec_sandra, enc_dec_sandra, OPENPGP=0, n=100)
+    if verbose:
+        print(">> Finished running CFB_SANDRA 100 times")
+
     # Sandra OPENPGP
     enc_dec_sandra = sandra.AES(key, sandra.MODE_OPENPGP, iv)
     run_n_times('OPENPGP_SANDRA', enc_dec_sandra, enc_dec_sandra, OPENPGP=2, n=100)
@@ -57,12 +63,12 @@ def performance_test(names, files_data, verbose=True):
         print(">> Finished running OPENPGP_SANDRA 100 times")
 
     # Troy RSA (a wrapper around PyCrypto)
-    enc_dec_rsa = troy.RSA(1024)
-    run_n_times('RSA_TROY', enc_dec_rsa, enc_dec_rsa, n=100)
+    enc_dec_rsa = troy.RSA(256)
+    run_n_times('RSA_TROY_256', enc_dec_rsa, enc_dec_rsa, n=100)
     if verbose:
-        print(">> Finished running RSA_TROY 100 times")
+        print(">> Finished running RSA_TROY_256 100 times")
 
-        print("======================== Results ==========================")
+        print("============================================= Results (seconds) ============================================")
         df = pd.DataFrame.from_dict(stats, orient='index')
         print(df.to_string())
         

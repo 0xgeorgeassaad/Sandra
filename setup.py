@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.0.16'
+VERSION = '0.0.17'
 DESCRIPTION = 'AES Stream Cipher with CFB and OpenPGP Modes'
 LONG_DESCRIPTION = 'A package that allows you to build encrypt variable sized files using AES as a stream cipher with CFB and OpenPGP modes'
 
@@ -15,6 +15,7 @@ LONG_DESCRIPTION = 'A package that allows you to build encrypt variable sized fi
 setup(
     name="Sandra",
     version=VERSION,
+    license= 'MIT',
     author="George Assaad",
     author_email="<lopgogo@gmail.com>",
     url='https://github.com/lopgogo/Sandra',
@@ -22,7 +23,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(exclude=['tests']),
-    install_requires=['pycryptodome', 'pandas'],
+    install_requires=['pycryptodome', 'pandas', 'rsa'],
     keywords=['python', 'encryption', 'decryption', 'cipher', 'cryptography'],
     classifiers=[
         "Development Status :: 1 - Planning",

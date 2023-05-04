@@ -22,3 +22,21 @@ def write_data(file_names, file_data, path='.'):
         with open(os.path.join(path, name), 'wb') as f:
             f.write(data)
 
+"""
+    pkcs7 padding
+"""
+def pad(data, block_size=16):
+    if isinstance(data, list):
+        return [pad(i) for i in data]
+    pad_len = block_size - len(data) % block_size
+    return data + (bytes([pad_len]) * pad_len)
+
+def unpad(data, block_size=16):
+    if isinstance(data, list):
+        return [unpad(i) for i in data]
+    if ord(data[-1:]) > block_size:
+        raise ValueError(f"Either data was not padded with {block_size} or block size is incorrect")
+    return data[:-ord(data[-1:])]
+
+def is_power_of_2(n):
+    return (n & (n-1) == 0) and n != 0

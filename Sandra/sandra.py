@@ -8,9 +8,10 @@ import warnings
 MODE_CFB = 1
 MODE_OPENPGP_STANDALONE = 2 # Deprecated use MODE_OPENPGP
 MODE_OPENPGP = 3
+AES_BLOCK_SIZE = 16
 
 class AES:
-    def __init__(self, key, mode, iv, segment_size=8):
+    def __init__(self, key, mode, iv, segment_size=128):
         if segment_size %8 != 0:
             raise ValueError(f"Segment Size must be multiples of a byte(octet) for all Modes.")
         if len(key) != aes.block_size:
@@ -106,7 +107,7 @@ class AES:
 
         cipher = aes.new(key, aes.MODE_ECB)
         x = iv
-        ciphertext = bytes()
+        ciphertext = bytearray()
         for i in range(len(plaintext) // s):
             m = plaintext[i*s : (i+1)*s]
             out = cipher.encrypt(x)
@@ -117,13 +118,13 @@ class AES:
         if rem != 0:
             out = cipher.encrypt(x)
             ciphertext += strxor(plaintext[-rem:], out[:rem])
-        return ciphertext
+        return bytes(ciphertext)
     
     @staticmethod
     def _decrypt_CFB(ciphertext, key, iv, s):
         cipher = aes.new(key, aes.MODE_ECB)
         x = iv
-        plaintext = bytes()
+        plaintext = bytearray()
         for i in range(len(ciphertext) // s):
             c = ciphertext[i*s : (i+1)*s]
             out = cipher.encrypt(x)
@@ -134,4 +135,4 @@ class AES:
         if rem != 0:
             out = cipher.encrypt(x)
             plaintext += strxor(ciphertext[-rem:], out[:rem])
-        return plaintext
+        return bytes(plaintext)
