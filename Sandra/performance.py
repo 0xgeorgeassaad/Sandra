@@ -5,7 +5,13 @@ from . import troy
 import timeit
 import pandas as pd
 
-def performance_test(names, files_data, verbose=True):
+def performance_test(
+        names, 
+        files_data, 
+        rsa_key_size=2048, 
+        rsa_engine=troy.RSA_ENGINE_RAW,
+        segment_size=16,
+        verbose=True):
     files = dict(zip(names, files_data))
 
     iv   = bytes.fromhex('fffffe00000000000000000000000000')
@@ -37,11 +43,11 @@ def performance_test(names, files_data, verbose=True):
 
 
     # PyCrypto CFB
-    encryptor = AES.new(key, AES.MODE_CFB, iv, segment_size=16)
-    decryptor = AES.new(key, AES.MODE_CFB, iv, segment_size=16)
-    run_n_times('CFB', encryptor, decryptor, n=1000)
+    encryptor = AES.new(key, AES.MODE_CFB, iv, segment_size=segment_size)
+    decryptor = AES.new(key, AES.MODE_CFB, iv, segment_size=segment_size)
+    run_n_times(f'CFB_{segment_size}', encryptor, decryptor, n=1000)
     if verbose:
-        print(">> Finished running CFB 1000 times")
+        print(f">> Finished running CFB_{segment_size} 1000 times")
 
     # PyCrypto OPENPGP
     encryptor = AES.new(key, AES.MODE_OPENPGP, iv)
@@ -51,10 +57,10 @@ def performance_test(names, files_data, verbose=True):
         print(">> Finished running OPENPGP 1000 times")
 
     # Sandra CFB
-    enc_dec_sandra = sandra.AES(key, sandra.MODE_CFB, iv)
-    run_n_times('CFB_SANDRA', enc_dec_sandra, enc_dec_sandra, OPENPGP=0, n=100)
+    enc_dec_sandra = sandra.AES(key, sandra.MODE_CFB, iv, segment_size)
+    run_n_times(f'CFB_SANDRA_{segment_size}', enc_dec_sandra, enc_dec_sandra, OPENPGP=0, n=100)
     if verbose:
-        print(">> Finished running CFB_SANDRA 100 times")
+        print(f">> Finished running CFB_SANDRA_{segment_size} 100 times")
 
     # Sandra OPENPGP
     enc_dec_sandra = sandra.AES(key, sandra.MODE_OPENPGP, iv)
@@ -63,10 +69,10 @@ def performance_test(names, files_data, verbose=True):
         print(">> Finished running OPENPGP_SANDRA 100 times")
 
     # Troy RSA (a wrapper around PyCrypto)
-    enc_dec_rsa = troy.RSA(256)
-    run_n_times('RSA_TROY_256', enc_dec_rsa, enc_dec_rsa, n=100)
+    enc_dec_rsa = troy.RSA(rsa_key_size, rsa_engine)
+    run_n_times(f'RSA_TROY_{rsa_key_size}', enc_dec_rsa, enc_dec_rsa, n=100)
     if verbose:
-        print(">> Finished running RSA_TROY_256 100 times")
+        print(f">> Finished running RSA_TROY_{rsa_key_size} 100 times")
 
         print("============================================= Results (seconds) ============================================")
         df = pd.DataFrame.from_dict(stats, orient='index')

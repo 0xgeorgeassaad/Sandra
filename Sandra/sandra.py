@@ -11,13 +11,70 @@ MODE_OPENPGP = 3
 AES_BLOCK_SIZE = 16
 
 class AES:
+    """
+    A class used to represent an AES Encryption Object for OpenPGP and CFB Mode
+
+    ...
+
+    Attributes
+    ----------
+    key : bytes
+        key used to encryption (16 bytes)
+    mode : int flag
+        either OpenPGP or CFB
+    iv : bytes
+        intial vector used for making a probabilistic encryption scheme (16 bytes)
+    segment_size : int
+        no. of bits shifted to the feedback register (default 128)
+
+    Methods
+    -------
+    encrypt(plaintext)
+        takes a bytes object of any size and returns ciphertext
+    decrypt(ciphertext)
+        takes a bytes object of any size and returns plaintext
+    """
     def __init__(self, key, mode, iv, segment_size=128):
+        """Initialize AES Encryption Object.
+
+        If the argument `segment_size` isn't passed in, the default value
+        of 128 bits is used.
+
+        Parameters
+        ----------
+        key : bytes
+        key used to encryption (16 bytes)
+        mode : int flag
+            either OpenPGP or CFB
+        iv : bytes
+            intial vector used for making a probabilistic encryption scheme (16 bytes)
+        segment_size : int
+            no. of bits shifted to the feedback register (default 128)
+
+        Raises
+        ------
+        ValueError
+            If Segment Size isn't multiples of a byte(octet) for all Modes.
+            If the key isn't 16 bytes
+            If the IV isn't 16 bytes
+            If no valid mode selected
+
+        Returns
+        -------
+        AES Object
+            a class instance 
+        """
         if segment_size %8 != 0:
             raise ValueError(f"Segment Size must be multiples of a byte(octet) for all Modes.")
         if len(key) != aes.block_size:
             raise ValueError(f"Length of Key must be {aes.block_size} bytes for all Modes.")
         if len(iv) != aes.block_size:
             raise ValueError(f"Length of IV must be {aes.block_size} bytes for all Modes.")
+        if mode != MODE_OPENPGP_STANDALONE and \
+            mode != MODE_OPENPGP and \
+            mode != MODE_CFB:
+            raise ValueError(f"Invalid Mode Selected.")
+
         if mode == MODE_OPENPGP_STANDALONE:
             warnings.warn(
                 "MODE_OPENPGP_STANDALONE Deprecated use MODE_OPENPGP instead", 
@@ -33,6 +90,18 @@ class AES:
             self._s = segment_size // 8 # no. of octets instead of bits
 
     def encrypt(self, plaintext):
+        """Encrypts plaintext based on mode selected on initialization.
+
+        Parameters
+        ----------
+        plaintext : bytes
+            data to be encrypted. Can be of any size. No need for padding.
+
+        Returns
+        -------
+        ciphertext: bytes
+            encypted plaintext using the selected mode. The same size as plaintext
+        """
         # preprocess
         if self._mode == MODE_CFB: 
             ciphertext = AES._encrypt_CFB(
@@ -86,6 +155,18 @@ class AES:
         return ciphertext
 
     def decrypt(self, ciphertext):
+        """Decrypts plaintext based on mode selected on initialization.
+
+        Parameters
+        ----------
+        ciphertext : bytes
+            data to be decrypted. Can be of any size. No need for padding.
+
+        Returns
+        -------
+        plaintext: bytes
+            decypted ciphertext using the selected mode. The same size as ciphertext
+        """
         if self._mode == MODE_CFB:
             plaintext = AES._decrypt_CFB(
                 ciphertext,
@@ -104,7 +185,24 @@ class AES:
     
     @staticmethod
     def _encrypt_CFB(plaintext, key, iv, s):
+        """Encrypts plaintext Using CFB Mode.
+           This is a self-enclosed static method
+        Parameters
+        ----------
+        plaintext : bytes
+            data to be encrypted. Can be of any size. No need for padding.
+        key: bytes
+            key used for encryption (16 bytes)
+        iv:
+            intial vector (16 bytes)
+        s: int
+            segment size in bits
 
+        Returns
+        -------
+        ciphertext: bytes
+            encypted plaintext using the selected mode. The same size as plaintext
+        """
         cipher = aes.new(key, aes.MODE_ECB)
         x = iv
         ciphertext = bytearray()
@@ -122,6 +220,24 @@ class AES:
     
     @staticmethod
     def _decrypt_CFB(ciphertext, key, iv, s):
+        """Decrypts plaintext Using CFB Mode.
+           This is a self-enclosed static method
+        Parameters
+        ----------
+        ciphertexttext : bytes
+            data to be decrypted. Can be of any size.
+        key: bytes
+            key used for encryption (16 bytes)
+        iv:
+            intial vector (16 bytes)
+        s: int
+            segment size in bits
+
+        Returns
+        -------
+        ciphertext: bytes
+            decrypted ciphertext using the selected mode. The same size as ciphertext
+        """
         cipher = aes.new(key, aes.MODE_ECB)
         x = iv
         plaintext = bytearray()

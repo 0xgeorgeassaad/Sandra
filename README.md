@@ -24,14 +24,14 @@ Sandra.write_data(
 ```python
 import Sandra
 file_names, file_data = Sandra.load_data('./taylor_txt/taylor_swift_1KB.txt') 
-enc_dec_rsa = Sandra.RSA(256)
+enc_dec_rsa = Sandra.RSA(2048, Sandra.RSA_ENGINE_DOME)
 ciphertext = enc_dec_rsa.encrypt(file_data[0])
 print(len(ciphertext))
 plaintext = enc_dec_rsa.decrypt(ciphertext)
 print(plaintext == file_data[0])
 Sandra.write_data(
-    file_names, # name of file to be written
-    [plaintext], # data to be written, must be same length as file_names
+    file_names, # name of the file to be written
+    [plaintext], # data to be written, must be the same length as file_names
     path='./taylor_txt_ed' # path to write data to
 )
 ```
@@ -61,7 +61,7 @@ print(len(ciphertext))
 plaintext = enc_dec_cfb.decrypt(ciphertext)
 print(plaintext == file_data[0])
 Sandra.write_data(
-    file_names, # name of file to be written
+    file_names, # name of the file to be written
     [plaintext], # data to be written, must be same length as file_names
     path='./taylor_txt_ed' # path to write data to
 )
@@ -88,8 +88,8 @@ plaintext = Sandra.unpad(plaintext,Sandra.AES_BLOCK_SIZE)
 print(len(plaintext))
 print(plaintext == file_data[0])
 Sandra.write_data(
-    file_names, # name of file to be written
-    [plaintext], # data to be written, must be same length as file_names
+    file_names, # name of the file to be written
+    [plaintext], # data to be written, must be the same length as file_names
     path='./taylor_txt_ed' # path to write data to
 )
 ```
@@ -99,6 +99,20 @@ To obtain a table like this one, run
 ```python
 import Sandra
 file_names, file_data = Sandra.load_data('path/to/data')
-Sandra.performance_test(file_names, file_data)
+stats = Sandra.performance_test(
+    file_names, 
+    file_data, 
+    rsa_key_size=256,
+    rsa_engine=Sandra.RSA_ENGINE_RAW,
+    segment_size=64,  
+    verbose=True)
+
+stats = Sandra.performance_test(
+    file_names, 
+    file_data, 
+    rsa_key_size=256,
+    rsa_engine=Sandra.RSA_ENGINE_RAW,
+    segment_size=16,  
+    verbose=True)
 ```
-![image](https://user-images.githubusercontent.com/26662104/236169065-8fb0448c-1d7f-4a7c-89c4-7678ca33c57a.png)
+![image](https://user-images.githubusercontent.com/26662104/236880905-4862877c-1fec-4662-831a-a8cdd5781a2d.png)

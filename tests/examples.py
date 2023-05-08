@@ -6,7 +6,28 @@ print(Sandra.__version__)
 
 # Performance
 file_names, file_data = Sandra.load_data('./taylor_txt')
-stats = Sandra.performance_test(file_names, file_data, verbose=True)
+stats = Sandra.performance_test(
+    file_names, 
+    file_data, 
+    rsa_key_size=256,
+    rsa_engine=Sandra.RSA_ENGINE_RAW,
+    segment_size=64,  
+    verbose=True)
+
+stats = Sandra.performance_test(
+    file_names, 
+    file_data, 
+    rsa_key_size=256,
+    rsa_engine=Sandra.RSA_ENGINE_RAW,
+    segment_size=16,  
+    verbose=True)
+
+""" stats = Sandra.performance_test(
+    file_names, 
+    file_data, 
+    rsa_key_size=2048,
+    rsa_engine=Sandra.RSA_ENGINE_DOME,  
+    verbose=True) """
 
 
 # Read and Write a Folder
@@ -35,7 +56,7 @@ Sandra.write_data(
 
 # RSA 
 # file_names, file_data = Sandra.load_data('./taylor_txt/taylor_swift_1KB.txt') 
-# enc_dec_rsa = Sandra.RSA(256)
+# enc_dec_rsa = Sandra.RSA(2048, Sandra.RSA_ENGINE_DOME)
 # ciphertext = enc_dec_rsa.encrypt(file_data[0])
 # print(len(ciphertext))
 # plaintext = enc_dec_rsa.decrypt(ciphertext)
